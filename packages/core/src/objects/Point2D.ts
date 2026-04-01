@@ -37,6 +37,7 @@ export class Point2D extends MathObject {
   }
 
   get label(): string { return this.options.label; }
+  get position(): Vec2 { return this.pos; }
   get color(): string { return this.options.color; }
   setColor(c: string): void { this.options.color = c; this.writePointUniforms(); }
 

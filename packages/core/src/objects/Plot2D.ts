@@ -54,6 +54,11 @@ export class Plot2D extends MathObject {
   /** Current function — used by morph animation */
   get currentFn(): (x: number) => number { return this.fn; }
 
+  /** Rebuild geometry (called when scene.param() changes) */
+  override refresh(): void {
+    this.updateGeometry();
+  }
+
   setFn(fn: (x: number) => number): void {
     this.fn = fn;
     this.updateGeometry();

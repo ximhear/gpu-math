@@ -4,7 +4,7 @@ import {
   Parametric3D, Point3D, Vector3D,
   transform, tangentLine, riemannSum, areaUnder, complexPlot,
   region, implicitCurve, ode, contourPlot, vectorField3D,
-  solidOfRevolution, piecewise, arc, scatter, bar, histogram,
+  solidOfRevolution, piecewise, arc, scatter, bar, histogram, label,
   animate, animateParam, sequence, wait,
 } from 'gpu-math';
 import { createDemo } from './shared.js';
@@ -91,6 +91,27 @@ scene.add(plot(x => Math.log(x), { label: 'ln(x)' }));`);
       const s = await createScene(c, { width: 420, height: 320 });
       s.add(plot(x => Math.exp(x), { label: 'eˣ', lineWidth: 2.5 }));
       s.add(plot(x => Math.log(x), { label: 'ln(x)', lineWidth: 2.5 }));
+    }
+
+    // 1-7: Axis Scale (non-uniform)
+    {
+      const c = createDemo(basics, 'Axis Scale [1, 0.5] — y compressed', `
+const scene = await createScene(canvas, { axisScale: [1, 0.5] });
+scene.add(plot(x => Math.sin(x)));
+// Circle looks like an ellipse because y is half-scale`);
+      const s = await createScene(c, { width: 420, height: 320, axisScale: [1, 0.5] });
+      s.add(plot(x => Math.sin(x), { lineWidth: 2.5, label: 'sin(x)' }));
+      s.add(parametric(t => [Math.cos(t), Math.sin(t)], { t: [0, 2 * Math.PI], color: '#f59e0b', lineWidth: 2, label: 'unit circle' }));
+    }
+
+    // 1-8: Axis Scale — y stretched
+    {
+      const c = createDemo(basics, 'Axis Scale [1, 2] — y stretched', `
+const scene = await createScene(canvas, { axisScale: [1, 2] });
+scene.add(plot(x => Math.sin(x)));`);
+      const s = await createScene(c, { width: 420, height: 320, axisScale: [1, 2] });
+      s.add(plot(x => Math.sin(x), { lineWidth: 2.5, label: 'sin(x)' }));
+      s.add(parametric(t => [Math.cos(t), Math.sin(t)], { t: [0, 2 * Math.PI], color: '#f59e0b', lineWidth: 2, label: 'unit circle' }));
     }
 
     // =============================================
@@ -1354,7 +1375,157 @@ scene.add(arc([0,0], 0.3, 0, theta, { color: '#10b981', lineWidth: 2 }));`);
     }
 
     // =============================================
-    // 13. THEMES
+    // 12.5 ANNOTATIONS (inline labels)
+    // =============================================
+    const annCat = category('Annotations (Inline Labels)');
+
+    // Labels at intersection points (no dots)
+    {
+      const c = createDemo(annCat, 'Circle-Line Intersection — Labels Only', `
+import { label } from 'gpu-math';
+// Circle x²+y²=4 and line y=x
+scene.add(implicitCurve((x,y) => x*x+y*y-4, { color: '#3b82f6' }));
+scene.add(plot(x => x, { color: '#ef4444', dash: [6,4] }));
+// Intersection points: (√2, √2) and (-√2, -√2)
+scene.add(label('A', [Math.SQRT2, Math.SQRT2]));
+scene.add(label('B', [-Math.SQRT2, -Math.SQRT2]));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(implicitCurve((x, y) => x * x + y * y - 4, { color: '#3b82f6', lineWidth: 2 }));
+      s.add(plot(x => x, { color: '#ef4444', dash: [6, 4], lineWidth: 1.5 }));
+      s.add(label('A', [Math.SQRT2, Math.SQRT2], { color: '#fff', fontSize: 16 }));
+      s.add(label('B', [-Math.SQRT2, -Math.SQRT2], { color: '#fff', fontSize: 16 }));
+    }
+
+    // Points with inline labels (vertices of a triangle)
+    {
+      const c = createDemo(annCat, 'Triangle Vertices', `
+scene.add(point([0, 3], { label: 'A', color: '#3b82f6', size: 6 }));
+scene.add(point([-2, -1], { label: 'B', color: '#ef4444', size: 6 }));
+scene.add(point([3, -1], { label: 'C', color: '#10b981', size: 6 }));
+scene.add(line([0,3], [-2,-1], { color: '#555' }));
+scene.add(line([-2,-1], [3,-1], { color: '#555' }));
+scene.add(line([3,-1], [0,3], { color: '#555' }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(line([0, 3], [-2, -1], { color: '#555', lineWidth: 1.5 }));
+      s.add(line([-2, -1], [3, -1], { color: '#555', lineWidth: 1.5 }));
+      s.add(line([3, -1], [0, 3], { color: '#555', lineWidth: 1.5 }));
+      s.add(point([0, 3], { label: 'A', color: '#3b82f6', size: 6 }));
+      s.add(point([-2, -1], { label: 'B', color: '#ef4444', size: 6 }));
+      s.add(point([3, -1], { label: 'C', color: '#10b981', size: 6 }));
+    }
+
+    // Conic section with labels
+    {
+      const c = createDemo(annCat, 'Ellipse — Foci Labels', `
+// Ellipse x²/9 + y²/4 = 1
+scene.add(implicitCurve((x,y) => x*x/9 + y*y/4 - 1, { color: '#8b5cf6' }));
+const c = Math.sqrt(9-4); // focal distance
+scene.add(label('F₁', [-c, 0], { color: '#ef4444' }));
+scene.add(label('F₂', [c, 0], { color: '#ef4444' }));
+scene.add(label('O', [0, 0]));
+scene.add(point([0, 0], { color: '#fff', size: 3 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(implicitCurve((x, y) => x * x / 9 + y * y / 4 - 1, { color: '#8b5cf6', lineWidth: 2.5 }));
+      const focalDist = Math.sqrt(9 - 4);
+      s.add(point([-focalDist, 0], { color: '#ef4444', size: 5 }));
+      s.add(point([focalDist, 0], { color: '#ef4444', size: 5 }));
+      s.add(label('F₁', [-focalDist, 0], { color: '#ef4444', fontSize: 15 }));
+      s.add(label('F₂', [focalDist, 0], { color: '#ef4444', fontSize: 15 }));
+      s.add(label('O', [0, 0], { color: '#aaa' }));
+      s.add(point([0, 0], { color: '#fff', size: 3 }));
+    }
+
+    // Tangent point label
+    {
+      const c = createDemo(annCat, 'Tangent Point — P label', `
+const f = plot(x => x*x, { lineWidth: 2 });
+scene.add(f);
+scene.add(tangentLine(f, { at: 1, color: '#ef4444' }));
+scene.add(point([1, 1], { label: 'P', color: '#ef4444', size: 6 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      const fTanLabel = plot(x => x * x, { label: 'y = x²', lineWidth: 2 });
+      s.add(fTanLabel);
+      s.add(tangentLine(fTanLabel, { at: 1, color: '#ef4444', lineWidth: 2 }));
+      s.add(point([1, 1], { label: 'P', color: '#ef4444', size: 6 }));
+    }
+
+    // =============================================
+    // 13. EXPORT
+    // =============================================
+    const exportCat = category('Export Image');
+
+    {
+      const section = document.createElement('div');
+      section.className = 'demo';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Export as PNG — click the button to download';
+      section.appendChild(h3);
+
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.style.borderRadius = '8px';
+      exportCanvas.style.cursor = 'grab';
+      section.appendChild(exportCanvas);
+
+      const btnRow = document.createElement('div');
+      btnRow.style.padding = '12px 16px';
+      btnRow.style.display = 'flex';
+      btnRow.style.gap = '8px';
+
+      const btn1x = document.createElement('button');
+      btn1x.textContent = 'Download PNG (1x)';
+      btn1x.style.cssText = 'background:#3b82f6;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.85rem;';
+      btnRow.appendChild(btn1x);
+
+      const btn2x = document.createElement('button');
+      btn2x.textContent = 'Download PNG (2x HD)';
+      btn2x.style.cssText = 'background:#10b981;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.85rem;';
+      btnRow.appendChild(btn2x);
+
+      section.appendChild(btnRow);
+
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+      code.textContent = `const png = await scene.exportImage();
+// or high-res: await scene.exportImage({ scale: 2 });
+
+const a = document.createElement('a');
+a.href = png;
+a.download = 'graph.png';
+a.click();`;
+      pre.appendChild(code);
+      section.appendChild(pre);
+
+      exportCat.appendChild(section);
+
+      const exportScene = await createScene(exportCanvas, { width: 420, height: 320 });
+      exportScene.add(plot(x => Math.sin(x), { label: 'sin(x)', lineWidth: 3 }));
+      exportScene.add(plot(x => Math.cos(x), { label: 'cos(x)', lineWidth: 2 }));
+      exportScene.add(areaUnder(
+        plot(x => Math.sin(x), { lineWidth: 0 }),
+        { from: 0, to: Math.PI, color: '#3b82f6', opacity: 0.2 },
+      ));
+
+      function download(dataUrl: string, filename: string) {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = filename;
+        a.click();
+      }
+
+      btn1x.addEventListener('click', async () => {
+        const png = await exportScene.exportImage();
+        download(png, 'gpu-math-1x.png');
+      });
+
+      btn2x.addEventListener('click', async () => {
+        const png = await exportScene.exportImage({ scale: 2 });
+        download(png, 'gpu-math-2x.png');
+      });
+    }
+
+    // =============================================
+    // 14. THEMES
     // =============================================
     const themes = category('Themes');
 

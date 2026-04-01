@@ -27,6 +27,7 @@ export { piecewise } from './objects/Piecewise2D.js';
 export { arc } from './objects/Arc2D.js';
 export { scatter } from './objects/Scatter2D.js';
 export { bar, histogram } from './objects/Bar2D.js';
+export { label } from './objects/Label2D.js';
 
 export { animate } from './animation/animate.js';
 export { animateParam } from './animation/animateParam.js';
@@ -66,6 +67,7 @@ export type { PiecewiseSegment, PiecewiseOptions } from './objects/Piecewise2D.j
 export type { ArcOptions } from './objects/Arc2D.js';
 export type { ScatterOptions } from './objects/Scatter2D.js';
 export type { BarData, BarOptions } from './objects/Bar2D.js';
+export type { LabelOptions } from './objects/Label2D.js';
 
 export { defineColorMap } from './engine/colormaps.js';
 export type { ColormapName } from './engine/colormaps.js';

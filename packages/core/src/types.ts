@@ -29,6 +29,9 @@ export interface SceneOptionsBase {
 
 export interface SceneOptions2D extends SceneOptionsBase {
   dimension?: 2;
+  /** Axis scale ratio [scaleX, scaleY]. Default [1, 1] (uniform).
+   *  Example: [1, 0.5] makes y-axis half the scale of x-axis. */
+  axisScale?: [number, number];
 }
 
 export interface SceneOptions3D extends SceneOptionsBase {

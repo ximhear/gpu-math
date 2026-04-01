@@ -10,8 +10,11 @@ import { AxisLabels } from './AxisLabels.js';
 import { wrapCanvas } from './OverlayContainer.js';
 import { getAutoColor } from '../themes/palettes.js';
 import { resolveTheme } from '../themes/builtins.js';
+import { AnnotationOverlay, type AnnotationData } from './AnnotationOverlay.js';
 import type { MathObject } from '../objects/MathObject.js';
 import type { Plot2D } from '../objects/Plot2D.js';
+import { Label2D } from '../objects/Label2D.js';
+import { Point2D } from '../objects/Point2D.js';
 
 export interface ParamHandle {
   value: number;
@@ -65,6 +68,9 @@ export async function createScene(
 
   const gpu = await initGPU(canvas);
   const camera = new Camera2D(canvas);
+  if (options?.axisScale) {
+    camera.scale = [options.axisScale[0], options.axisScale[1]];
+  }
   const renderer = new Renderer(gpu, camera);
   const legend = new LegendOverlay(canvas, wrapper);
   const hover = new HoverInspector(canvas, camera, wrapper);
@@ -72,6 +78,7 @@ export async function createScene(
   const theme = resolveTheme(options?.theme);
   renderer.applyTheme(theme);
   const axisLabels = new AxisLabels(canvas, camera, theme, wrapper);
+  const annotationOverlay = new AnnotationOverlay(canvas, camera, theme, wrapper);
   const sliders = new ParamSliderOverlay(canvas, wrapper);
 
   let controller: CameraController | null = null;
@@ -83,10 +90,39 @@ export async function createScene(
   const objects: MathObject[] = [];
 
   function updateLegend() {
+    // Points and Labels show inline, not in legend. Plots show in legend.
     const entries = objects
+      .filter(o => !(o instanceof Point2D) && !(o instanceof Label2D))
       .map(o => ({ label: getLabel(o), color: getColor(o) }))
       .filter(e => e.label);
     legend.draw(entries);
+  }
+
+  function updateAnnotations() {
+    const data: AnnotationData[] = [];
+    for (const obj of objects) {
+      if (obj instanceof Label2D) {
+        const opts = obj.labelOptions;
+        data.push({
+          text: obj.text,
+          worldPos: obj.position,
+          color: opts.color,
+          fontSize: opts.fontSize,
+          fontStyle: opts.fontStyle,
+          offset: opts.offset,
+        });
+      } else if (obj instanceof Point2D && obj.label) {
+        data.push({
+          text: obj.label,
+          worldPos: obj.position,
+          color: obj.color,
+          fontSize: 14,
+          fontStyle: 'italic',
+          offset: [6, -6],
+        });
+      }
+    }
+    annotationOverlay.setAnnotations(data);
   }
 
   function updateHover() {
@@ -106,7 +142,13 @@ export async function createScene(
         max: opts.max,
         value: handle.value,
         step: opts.step ?? 0,
-        onChange(v: number) { handle.value = v; },
+        onChange(v: number) {
+          handle.value = v;
+          // Refresh all objects that depend on external state
+          for (const obj of objects) {
+            obj.refresh();
+          }
+        },
       });
       return handle;
     },
@@ -135,6 +177,7 @@ export async function createScene(
       renderer.add(obj);
       updateLegend();
       updateHover();
+      updateAnnotations();
     },
     remove(obj: MathObject) {
       const idx = objects.indexOf(obj);
@@ -142,6 +185,7 @@ export async function createScene(
       renderer.remove(obj);
       updateLegend();
       updateHover();
+      updateAnnotations();
     },
     destroy() {
       controller?.destroy();
@@ -149,6 +193,7 @@ export async function createScene(
       legend.destroy();
       hover.destroy();
       axisLabels.destroy();
+      annotationOverlay.destroy();
       sliders.destroy();
     },
   };

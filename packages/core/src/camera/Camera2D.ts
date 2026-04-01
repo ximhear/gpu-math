@@ -10,16 +10,21 @@ export interface CameraUniformData {
 
 export class Camera2D {
   center: Vec2 = [0, 0];
-  zoom = 50; // pixels per unit
+  zoom = 50; // pixels per unit (base)
+  /** Per-axis scale multiplier. [1, 1] = uniform. [1, 0.5] = y is half scale. */
+  scale: Vec2 = [1, 1];
   private canvas: HTMLCanvasElement;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
   }
 
+  private get zoomX(): number { return this.zoom * this.scale[0]; }
+  private get zoomY(): number { return this.zoom * this.scale[1]; }
+
   pan(dxScreen: number, dyScreen: number): void {
-    this.center[0] -= dxScreen / this.zoom;
-    this.center[1] += dyScreen / this.zoom;
+    this.center[0] -= dxScreen / this.zoomX;
+    this.center[1] += dyScreen / this.zoomY;
   }
 
   zoomAt(factor: number, screenX: number, screenY: number): void {
@@ -34,24 +39,24 @@ export class Camera2D {
   screenToWorld(sx: number, sy: number): Vec2 {
     const w = this.canvas.width;
     const h = this.canvas.height;
-    const wx = (sx - w / 2) / this.zoom + this.center[0];
-    const wy = -(sy - h / 2) / this.zoom + this.center[1];
+    const wx = (sx - w / 2) / this.zoomX + this.center[0];
+    const wy = -(sy - h / 2) / this.zoomY + this.center[1];
     return [wx, wy];
   }
 
   worldToScreen(wx: number, wy: number): Vec2 {
     const w = this.canvas.width;
     const h = this.canvas.height;
-    const sx = (wx - this.center[0]) * this.zoom + w / 2;
-    const sy = -(wy - this.center[1]) * this.zoom + h / 2;
+    const sx = (wx - this.center[0]) * this.zoomX + w / 2;
+    const sy = -(wy - this.center[1]) * this.zoomY + h / 2;
     return [sx, sy];
   }
 
   getViewProjectionMatrix(): Float32Array {
     const w = this.canvas.width;
     const h = this.canvas.height;
-    const halfW = w / (2 * this.zoom);
-    const halfH = h / (2 * this.zoom);
+    const halfW = w / (2 * this.zoomX);
+    const halfH = h / (2 * this.zoomY);
     const cx = this.center[0];
     const cy = this.center[1];
 
