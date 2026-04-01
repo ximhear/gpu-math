@@ -1,0 +1,27 @@
+{
+  "name": "gpu-math",
+  "version": "0.1.0",
+  "description": "WebGPU-powered interactive math visualization",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "keywords": ["webgpu", "math", "visualization", "3d", "plot", "graph"],
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "@webgpu/types": "^0.1.53"
+  }
+}

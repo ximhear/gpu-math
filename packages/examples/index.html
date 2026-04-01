@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gpu-math — Interactive Math Visualization</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #111;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 12px;
+    }
+    h1 { font-size: 1.5rem; font-weight: 400; }
+    h2 { font-size: 0.9rem; font-weight: 300; color: #888; margin-bottom: 6px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .scene { position: relative; text-align: center; }
+    canvas { border-radius: 8px; cursor: grab; display: block; }
+    canvas:active { cursor: grabbing; }
+    #error { color: #ef4444; background: #1c1c1c; padding: 16px; border-radius: 8px; display: none; }
+    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>gpu-math</h1>
+  <div class="grid">
+    <div class="scene">
+      <h2>2D plots + animation</h2>
+      <canvas id="canvas2d"></canvas>
+    </div>
+    <div class="scene">
+      <h2>vector field</h2>
+      <canvas id="canvasVf"></canvas>
+    </div>
+    <div class="scene">
+      <h2>linear algebra — matrix transform</h2>
+      <canvas id="canvasLa"></canvas>
+    </div>
+    <div class="scene">
+      <h2>calculus — tangent + riemann sum</h2>
+      <canvas id="canvasCal"></canvas>
+    </div>
+    <div class="scene" style="grid-column: 1 / -1; display: flex; justify-content: center;">
+      <div>
+        <h2>3D surface — drag to rotate</h2>
+        <canvas id="canvas3d"></canvas>
+      </div>
+    </div>
+  </div>
+  <div id="error"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

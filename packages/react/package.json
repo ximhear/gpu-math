@@ -1,0 +1,33 @@
+{
+  "name": "@gpu-math/react",
+  "version": "0.1.0",
+  "description": "React components for gpu-math",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "gpu-math": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "react": "^19.1.0",
+    "@types/react": "^19.1.0",
+    "gpu-math": "workspace:*"
+  },
+  "license": "MIT"
+}
