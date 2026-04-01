@@ -1,6 +1,8 @@
 import type { GPUState, Vec3 } from '../types.js';
 import type { Camera3DUniformData } from '../camera/Camera3D.js';
+import { MathObject3D } from './MathObject3D.js';
 import { writeBuffer } from '../engine/gpu.js';
+import { getColormapWGSL } from '../engine/colormaps.js';
 import surfaceShaderSource from '../shaders/surface.wgsl';
 
 export interface SurfaceOptions {
@@ -13,7 +15,7 @@ export interface SurfaceOptions {
   label?: string;
 }
 
-export class Surface3D {
+export class Surface3D extends MathObject3D {
   private fn: (u: number, v: number) => Vec3;
   private options: Required<SurfaceOptions>;
   private gpu: GPUState | null = null;
@@ -28,6 +30,7 @@ export class Surface3D {
   get label(): string { return this.options.label; }
 
   constructor(fn: (u: number, v: number) => Vec3, options?: SurfaceOptions) {
+    super();
     this.fn = fn;
     this.options = {
       u: options?.u ?? [-3, 3],
@@ -47,7 +50,9 @@ export class Surface3D {
     this.cameraBuffer = device.createBuffer({ size: 128, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
     this.surfaceBuffer = device.createBuffer({ size: 48, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
 
-    const shaderModule = device.createShaderModule({ code: surfaceShaderSource });
+    const colormapCode = getColormapWGSL(this.options.colorMap);
+    const shaderCode = surfaceShaderSource.replace('// COLORMAP_PLACEHOLDER', colormapCode);
+    const shaderModule = device.createShaderModule({ code: shaderCode });
 
     const bindGroupLayout = device.createBindGroupLayout({
       entries: [

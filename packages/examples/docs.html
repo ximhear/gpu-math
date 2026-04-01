@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gpu-math — Documentation</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <header>
+    <h1>gpu-math</h1>
+    <p class="subtitle">WebGPU-powered interactive math visualization</p>
+    <nav>
+      <a href="/">Examples</a>
+      <a href="/docs.html" class="active">Documentation</a>
+    </nav>
+  </header>
+
+  <main class="docs">
+    <h2>Quick Start</h2>
+
+    <h3>Installation</h3>
+    <pre><code>npm install gpu-math</code></pre>
+
+    <h3>Your First Plot</h3>
+    <pre><code>import { createScene, plot } from 'gpu-math';
+
+const canvas = document.getElementById('canvas');
+const scene = await createScene(canvas);
+scene.add(plot(x => Math.sin(x)));</code></pre>
+    <p>That's it! You get a smooth sine wave on an infinite grid. Drag to pan, scroll to zoom.</p>
+
+    <h2>Scene</h2>
+
+    <h3>2D Scene</h3>
+    <pre><code>const scene = await createScene(canvas, {
+  width: 800,          // canvas width in CSS pixels
+  height: 600,         // canvas height in CSS pixels
+  theme: '3b1b',       // '3b1b' | 'light' | 'dark' | 'minimal' | custom Theme object
+  interactive: true,   // enable pan/zoom (default: true)
+  pixelRatio: 'auto',  // 'auto' | number (default: 'auto')
+});
+
+scene.add(someObject);    // add a math object
+scene.remove(someObject); // remove it
+scene.destroy();          // clean up GPU resources</code></pre>
+
+    <h3>3D Scene</h3>
+    <pre><code>import { createScene3D, surface } from 'gpu-math';
+
+const scene3d = await createScene3D(canvas, {
+  width: 800,
+  height: 600,
+  fov: 45,  // field of view in degrees
+});
+
+// Drag to rotate, scroll to zoom
+scene3d.add(surface((u, v) => [u, Math.sin(u) * Math.cos(v), v], {
+  u: [-3, 3],
+  v: [-3, 3],
+}));</code></pre>
+
+    <h2>2D Objects</h2>
+
+    <h3>plot(fn, options?)</h3>
+    <p>Plot a function <code class="inline-code">y = f(x)</code>.</p>
+    <pre><code>// Simple
+scene.add(plot(x => Math.sin(x)));
+
+// With options
+scene.add(plot(x => x ** 2, {
+  range: [-5, 5],     // x range (default: [-10, 10])
+  color: '#3b82f6',   // line color
+  lineWidth: 2,       // line thickness in pixels
+  dash: [8, 4],       // [dash length, gap length] — solid if omitted
+  opacity: 1,         // 0 to 1
+  label: 'x²',        // legend label
+  samples: 512,       // number of initial samples
+}));
+
+// With parameters (for animation)
+const p = plot((x, { a, b }) => a * Math.sin(b * x), {
+  params: { a: 1, b: 1 },
+  label: 'a·sin(b·x)',
+});
+scene.add(p);
+
+// Later: change parameters
+p.setParam('a', 2);
+p.setParam('b', 3);</code></pre>
+
+    <h3>parametric(fn, options?)</h3>
+    <p>Plot a parametric curve <code class="inline-code">t → [x, y]</code>.</p>
+    <pre><code>// Circle
+scene.add(parametric(t => [Math.cos(t), Math.sin(t)], {
+  t: [0, 2 * Math.PI],  // parameter range
+  color: '#10b981',
+  lineWidth: 2,
+  label: 'circle',
+  samples: 256,
+}));
+
+// Lissajous curve
+scene.add(parametric(t => [Math.sin(3*t), Math.sin(2*t)], {
+  t: [0, 2 * Math.PI],
+}));
+
+// Spiral
+scene.add(parametric(t => {
+  const r = 0.2 * t;
+  return [r * Math.cos(t), r * Math.sin(t)];
+}, { t: [0, 6 * Math.PI] }));</code></pre>
+
+    <h3>point(position, options?)</h3>
+    <pre><code>scene.add(point([1, 0], {
+  color: '#ef4444',
+  size: 8,         // radius in pixels
+  label: 'A',
+}));</code></pre>
+
+    <h3>vector(from, to, options?)</h3>
+    <pre><code>scene.add(vector([0, 0], [2, 1], {
+  color: '#10b981',
+  lineWidth: 2,
+  headSize: 0.15,  // arrowhead size in world units
+  label: 'v',
+}));</code></pre>
+
+    <h3>line(from, to, options?)</h3>
+    <pre><code>scene.add(line([0, 0], [3, 2], {
+  color: '#6b7280',
+  lineWidth: 1,
+  dash: [6, 4],
+}));</code></pre>
+
+    <h3>vectorField(fn, options?)</h3>
+    <p>Render a 2D vector field as a grid of arrows.</p>
+    <pre><code>// Rotation field
+scene.add(vectorField((x, y) => [-y, x], {
+  density: 20,           // arrows per axis (default: 15)
+  scale: 0.5,            // arrow length scale (default: 0.8)
+  color: '#8b5cf6',
+  lineWidth: 1.5,
+  opacity: 0.7,
+}));
+
+// Source field
+scene.add(vectorField((x, y) => [x, y], {
+  density: 14,
+  color: '#ef4444',
+}));</code></pre>
+
+    <h2>3D Objects</h2>
+
+    <h3>surface(fn, options?)</h3>
+    <p>Render a parametric surface <code class="inline-code">(u, v) → [x, y, z]</code>.</p>
+    <pre><code>scene3d.add(surface((u, v) => [u, Math.sin(u) * Math.cos(v), v], {
+  u: [-3, 3],          // u parameter range
+  v: [-3, 3],          // v parameter range
+  resolution: 64,      // grid resolution (default: 64)
+  wireframe: true,     // show wireframe overlay (default: false)
+  opacity: 1,          // 0 to 1
+}));
+
+// Paraboloid
+scene3d.add(surface((u, v) => [u, u*u + v*v, v], {
+  u: [-2, 2], v: [-2, 2],
+}));</code></pre>
+
+    <h2>Linear Algebra</h2>
+
+    <h3>transform(matrix, options?)</h3>
+    <p>Visualize a 2×2 matrix transformation on the grid.</p>
+    <pre><code>import { transform, animateParam } from 'gpu-math';
+
+// Shear matrix
+const t = transform([[2, 1], [0, 1]], {
+  showGrid: true,      // show transformed grid lines
+  showEigen: true,     // show eigenvectors
+  color: '#3b82f6',    // grid color
+  gridRange: 5,        // grid extent
+  gridDensity: 11,     // number of grid lines
+});
+scene.add(t);
+
+// Animate: identity → full transform
+t.setProgress(0);
+await animateParam(t, 't', {
+  from: 0, to: 1, duration: 2000, easing: 'easeInOut',
+});</code></pre>
+
+    <h2>Calculus</h2>
+
+    <h3>tangentLine(plot, options)</h3>
+    <p>Draw the tangent line at a specific point on a plot.</p>
+    <pre><code>const f = plot(x => Math.sin(x), { lineWidth: 2 });
+scene.add(f);
+
+scene.add(tangentLine(f, {
+  at: 1,             // x-coordinate of tangent point
+  color: '#ef4444',
+  lineWidth: 2,
+  length: 4,         // tangent line length in world units
+}));
+
+// Animate the tangent point
+const tl = tangentLine(f, { at: 0 });
+scene.add(tl);
+await animateParam(tl, 'at', { from: -3, to: 3, duration: 3000 });</code></pre>
+
+    <h3>riemannSum(plot, options)</h3>
+    <p>Visualize Riemann sums (rectangles approximating area under a curve).</p>
+    <pre><code>const f = plot(x => x * x * 0.3, { label: '0.3x²' });
+scene.add(f);
+
+const rs = riemannSum(f, {
+  from: 0,           // left bound
+  to: 3,             // right bound
+  n: 10,             // number of rectangles
+  method: 'left',    // 'left' | 'right' | 'midpoint'
+  color: '#10b981',
+  opacity: 0.4,
+});
+scene.add(rs);
+
+// Animate: increase rectangles to show convergence
+await animateParam(rs, 'n', { from: 5, to: 100, duration: 3000 });</code></pre>
+
+    <h2>Animation</h2>
+
+    <h3>animate(options)</h3>
+    <p>Morph a plot from its current function to a new one.</p>
+    <pre><code>const p = plot(x => Math.sin(x));
+scene.add(p);
+
+await animate({
+  from: p,
+  to: x => Math.sin(3 * x),  // target function
+  duration: 1000,              // milliseconds
+  easing: 'easeInOut',         // easing function
+});</code></pre>
+
+    <h3>animateParam(target, param, options)</h3>
+    <p>Animate a numeric parameter over time.</p>
+    <pre><code>const p = plot((x, { freq }) => Math.sin(freq * x), { params: { freq: 1 } });
+scene.add(p);
+
+await animateParam(p, 'freq', {
+  from: 1,          // start value (default: current value)
+  to: 5,            // end value
+  duration: 2000,
+  easing: 'easeInOut',
+});</code></pre>
+
+    <h3>sequence(steps) + wait(ms)</h3>
+    <p>Run animations in order.</p>
+    <pre><code>await sequence([
+  () => animateParam(p, 'freq', { to: 5, duration: 1000 }),
+  () => wait(500),
+  () => animate({ from: p, to: x => Math.cos(x), duration: 800 }),
+  () => wait(300),
+  () => animateParam(p, 'freq', { to: 1, duration: 1000, easing: 'bounceOut' }),
+]);</code></pre>
+
+    <h3>Easing Functions</h3>
+    <p>Available easing names:</p>
+    <table>
+      <tr><th>Name</th><th>Description</th></tr>
+      <tr><td><code>linear</code></td><td>Constant speed</td></tr>
+      <tr><td><code>easeIn</code></td><td>Slow start (cubic)</td></tr>
+      <tr><td><code>easeOut</code></td><td>Slow end (cubic)</td></tr>
+      <tr><td><code>easeInOut</code></td><td>Slow start and end (cubic)</td></tr>
+      <tr><td><code>bounceOut</code></td><td>Bounce effect at the end</td></tr>
+      <tr><td><code>elasticOut</code></td><td>Spring/elastic effect at the end</td></tr>
+    </table>
+    <p>You can also pass a custom easing function <code class="inline-code">(t: number) => number</code>.</p>
+
+    <h2>Themes</h2>
+
+    <h3>Built-in Themes</h3>
+    <pre><code>createScene(canvas, { theme: '3b1b' });    // default — dark, 3Blue1Brown style
+createScene(canvas, { theme: 'dark' });    // pure dark
+createScene(canvas, { theme: 'light' });   // white background
+createScene(canvas, { theme: 'minimal' }); // minimal grayscale</code></pre>
+
+    <h3>Custom Theme</h3>
+    <pre><code>createScene(canvas, {
+  theme: {
+    background: '#0f172a',
+    grid: { color: '#1e293b', majorColor: '#334155' },
+    axis: { color: '#e2e8f0', labelColor: '#94a3b8' },
+    palette: ['#38bdf8', '#fb923c', '#a78bfa', '#34d399'],
+    font: { family: 'monospace', size: 13 },
+  },
+});</code></pre>
+
+    <h2>React</h2>
+
+    <h3>Installation</h3>
+    <pre><code>npm install gpu-math @gpu-math/react</code></pre>
+
+    <h3>Usage</h3>
+    <pre><code>import { MathCanvas, Plot, Surface, Point, VectorField, Parametric } from '@gpu-math/react';
+
+// 2D
+function App() {
+  return (
+    &lt;MathCanvas width={800} height={600} theme="3b1b"&gt;
+      &lt;Plot fn={x =&gt; Math.sin(x)} color="blue" label="sin(x)" /&gt;
+      &lt;Plot fn={x =&gt; Math.cos(x)} color="red" label="cos(x)" /&gt;
+      &lt;Point at={[0, 0]} color="white" size={5} /&gt;
+    &lt;/MathCanvas&gt;
+  );
+}
+
+// 3D
+function App3D() {
+  return (
+    &lt;MathCanvas width={800} height={600} dimension={3}&gt;
+      &lt;Surface fn={(u, v) =&gt; [u, Math.sin(u) * Math.cos(v), v]}
+        u={[-3, 3]} v={[-3, 3]} wireframe /&gt;
+    &lt;/MathCanvas&gt;
+  );
+}
+
+// Interactive parameters with React state
+function Wave() {
+  const [freq, setFreq] = useState(1);
+  return (
+    &lt;&gt;
+      &lt;input type="range" min={1} max={10} value={freq}
+        onChange={e =&gt; setFreq(+e.target.value)} /&gt;
+      &lt;MathCanvas width={600} height={400}&gt;
+        &lt;Plot fn={x =&gt; Math.sin(freq * x)} color="blue" /&gt;
+      &lt;/MathCanvas&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+
+    <h3>Available Components</h3>
+    <table>
+      <tr><th>Component</th><th>Props</th></tr>
+      <tr><td><code>&lt;MathCanvas&gt;</code></td><td>width, height, theme, dimension, interactive, children</td></tr>
+      <tr><td><code>&lt;Plot&gt;</code></td><td>fn, color, lineWidth, dash, label, range, samples</td></tr>
+      <tr><td><code>&lt;Parametric&gt;</code></td><td>fn, t, color, lineWidth, label</td></tr>
+      <tr><td><code>&lt;Point&gt;</code></td><td>at, color, size, label</td></tr>
+      <tr><td><code>&lt;Surface&gt;</code></td><td>fn, u, v, resolution, wireframe, opacity</td></tr>
+      <tr><td><code>&lt;VectorField&gt;</code></td><td>fn, density, scale, color</td></tr>
+    </table>
+
+    <h2>Requirements</h2>
+    <p>gpu-math requires a browser with <a href="https://caniuse.com/webgpu" style="color: #7dd3fc;">WebGPU support</a>:</p>
+    <table>
+      <tr><th>Browser</th><th>Minimum Version</th></tr>
+      <tr><td>Chrome</td><td>113+</td></tr>
+      <tr><td>Edge</td><td>113+</td></tr>
+      <tr><td>Safari</td><td>18+</td></tr>
+      <tr><td>Firefox</td><td>141+</td></tr>
+    </table>
+
+  </main>
+</body>
+</html>

@@ -42,14 +42,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
   return out;
 }
 
-// Viridis-like colormap (simplified 4-stop)
-fn viridis(t: f32) -> vec3<f32> {
-  let c = clamp(t, 0.0, 1.0);
-  let r = mix(0.267, 0.993, smoothstep(0.5, 1.0, c));
-  let g = mix(0.004, 0.906, c);
-  let b = mix(0.329, 0.144, smoothstep(0.0, 0.7, c));
-  return vec3(r, g, b);
-}
+// COLORMAP_PLACEHOLDER
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
@@ -67,8 +60,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
   let backDiffuse = max(dot(-normal, lightDir), 0.0) * 0.3;
   let lighting = ambient + max(diffuse, backDiffuse) + specular;
 
-  // Color from height
-  let baseColor = viridis(in.height);
+  // Color from height (colormap injected at build time)
+  let baseColor = colormap(in.height);
 
   // Wireframe overlay
   var wire = 0.0;

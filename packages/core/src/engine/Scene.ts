@@ -5,6 +5,7 @@ import { Camera2D } from '../camera/Camera2D.js';
 import { CameraController } from '../camera/CameraController.js';
 import { LegendOverlay } from './LegendOverlay.js';
 import { HoverInspector } from '../interaction/HoverInspector.js';
+import { ParamSliderOverlay, type ParamDef } from '../interaction/ParamSlider.js';
 import { AxisLabels } from './AxisLabels.js';
 import { wrapCanvas } from './OverlayContainer.js';
 import { getAutoColor } from '../themes/palettes.js';
@@ -12,9 +13,21 @@ import { resolveTheme } from '../themes/builtins.js';
 import type { MathObject } from '../objects/MathObject.js';
 import type { Plot2D } from '../objects/Plot2D.js';
 
+export interface ParamHandle {
+  value: number;
+}
+
+export interface ParamOptions {
+  min: number;
+  max: number;
+  value?: number;
+  step?: number;
+}
+
 export interface Scene2D {
   add(obj: MathObject): void;
   remove(obj: MathObject): void;
+  param(name: string, options: ParamOptions): ParamHandle;
   camera: Camera2D;
   destroy(): void;
 }
@@ -54,6 +67,7 @@ export async function createScene(
   const theme = resolveTheme(options?.theme);
   renderer.applyTheme(theme);
   const axisLabels = new AxisLabels(canvas, camera, theme, wrapper);
+  const sliders = new ParamSliderOverlay(canvas, wrapper);
 
   let controller: CameraController | null = null;
   if (options?.interactive !== false) {
@@ -79,6 +93,18 @@ export async function createScene(
 
   return {
     camera,
+    param(name: string, opts: ParamOptions): ParamHandle {
+      const handle: ParamHandle = { value: opts.value ?? opts.min };
+      sliders.addParam({
+        name,
+        min: opts.min,
+        max: opts.max,
+        value: handle.value,
+        step: opts.step ?? 0,
+        onChange(v: number) { handle.value = v; },
+      });
+      return handle;
+    },
     add(obj: MathObject) {
       const hasExplicit = 'hasExplicitColor' in obj && (obj as { hasExplicitColor: boolean }).hasExplicitColor;
       if ('setColor' in obj && typeof (obj as { setColor: unknown }).setColor === 'function' && !hasExplicit) {
@@ -103,6 +129,7 @@ export async function createScene(
       legend.destroy();
       hover.destroy();
       axisLabels.destroy();
+      sliders.destroy();
     },
   };
 }

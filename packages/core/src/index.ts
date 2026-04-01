@@ -1,5 +1,5 @@
 export { createScene } from './engine/Scene.js';
-export type { Scene2D } from './engine/Scene.js';
+export type { Scene2D, ParamHandle, ParamOptions } from './engine/Scene.js';
 export { createScene3D } from './engine/Scene3D.js';
 export type { Scene3DHandle } from './engine/Scene3D.js';
 
@@ -10,8 +10,13 @@ export { vector } from './objects/Vector2D.js';
 export { line } from './objects/Line2D.js';
 export { vectorField } from './objects/VectorField2D.js';
 export { surface } from './objects/Surface3D.js';
+export { Parametric3D } from './objects/Parametric3D.js';
+export { Point3D } from './objects/Point3D.js';
+export { Vector3D } from './objects/Vector3D.js';
 export { transform } from './objects/Transform2D.js';
 export { tangentLine, riemannSum } from './objects/Calculus2D.js';
+export { areaUnder } from './objects/AreaUnder2D.js';
+export { complexPlot } from './objects/ComplexPlot2D.js';
 
 export { animate } from './animation/animate.js';
 export { animateParam } from './animation/animateParam.js';
@@ -34,9 +39,16 @@ export type { VectorOptions } from './objects/Vector2D.js';
 export type { LineOptions } from './objects/Line2D.js';
 export type { VectorFieldOptions } from './objects/VectorField2D.js';
 export type { SurfaceOptions } from './objects/Surface3D.js';
+export type { Parametric3DOptions } from './objects/Parametric3D.js';
+export type { Point3DOptions } from './objects/Point3D.js';
+export type { Vector3DOptions } from './objects/Vector3D.js';
 export type { TransformOptions } from './objects/Transform2D.js';
 export type { TangentLineOptions, RiemannSumOptions } from './objects/Calculus2D.js';
+export type { AreaUnderOptions } from './objects/AreaUnder2D.js';
+export type { ComplexPlotOptions, Complex } from './objects/ComplexPlot2D.js';
 
+export { defineColorMap } from './engine/colormaps.js';
+export type { ColormapName } from './engine/colormaps.js';
 export { resolveTheme } from './themes/builtins.js';
 export { theme3b1b, themeDark, themeLight, themeMinimal } from './themes/builtins.js';
 export type { AnimateOptions } from './animation/animate.js';

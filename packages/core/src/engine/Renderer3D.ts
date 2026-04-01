@@ -1,11 +1,11 @@
 import type { GPUState } from '../types.js';
 import type { Camera3D } from '../camera/Camera3D.js';
-import type { Surface3D } from '../objects/Surface3D.js';
+import type { MathObject3D } from '../objects/MathObject3D.js';
 
 export class Renderer3D {
   private gpu: GPUState;
   private camera: Camera3D;
-  private objects: Surface3D[] = [];
+  private objects: MathObject3D[] = [];
   private running = false;
   private depthTexture: GPUTexture | null = null;
 
@@ -27,12 +27,12 @@ export class Renderer3D {
     });
   }
 
-  add(obj: Surface3D): void {
+  add(obj: MathObject3D): void {
     obj.init(this.gpu);
     this.objects.push(obj);
   }
 
-  remove(obj: Surface3D): void {
+  remove(obj: MathObject3D): void {
     const idx = this.objects.indexOf(obj);
     if (idx !== -1) {
       this.objects.splice(idx, 1);

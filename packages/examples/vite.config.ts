@@ -21,4 +21,12 @@ export default defineConfig({
       'gpu-math': resolve(__dirname, '../core/src/index.ts'),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        docs: resolve(__dirname, 'docs.html'),
+      },
+    },
+  },
 });
