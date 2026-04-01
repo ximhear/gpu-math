@@ -3,7 +3,7 @@ import {
   plot, parametric, point, vector, line, vectorField, surface,
   Parametric3D, Point3D, Vector3D,
   transform, tangentLine, riemannSum, areaUnder, complexPlot,
-  region, implicitCurve,
+  region, implicitCurve, ode, vectorField3D,
   animate, animateParam, sequence, wait,
 } from 'gpu-math';
 import { createDemo } from './shared.js';
@@ -263,6 +263,39 @@ scene.add(vectorField((x, y) => [-y + x*0.3, x + y*0.3], {
 }));`);
       const s = await createScene(c, { width: 420, height: 320, theme: 'dark' });
       s.add(vectorField((x, y) => [-y + x * 0.3, x + y * 0.3], { density: 18, scale: 0.4, color: '#f59e0b', lineWidth: 1.5 }));
+    }
+
+    // 4-5: ODE trajectories on rotation field
+    {
+      const c = createDemo(vfields, 'ODE Trajectories (rotation)', `
+import { ode } from 'gpu-math';
+scene.add(vectorField((x, y) => [-y, x], { density: 12, color: '#555', scale: 0.5 }));
+scene.add(ode((x, y) => [-y, x], {
+  initialPoints: [[1,0], [2,0], [0,1.5], [-1,0.5]],
+  steps: 800, color: '#f59e0b', lineWidth: 2,
+}));`);
+      const s = await createScene(c, { width: 420, height: 320, theme: 'dark' });
+      s.add(vectorField((x, y) => [-y, x], { density: 12, color: '#444', scale: 0.5, lineWidth: 1 }));
+      s.add(ode((x, y) => [-y, x], {
+        initialPoints: [[1, 0], [2, 0], [0, 1.5], [-1, 0.5]],
+        steps: 800, color: '#f59e0b', lineWidth: 2,
+      }));
+    }
+
+    // 4-6: ODE on saddle field
+    {
+      const c = createDemo(vfields, 'ODE Trajectories (saddle)', `
+scene.add(vectorField((x, y) => [x, -y], { density: 12, color: '#555' }));
+scene.add(ode((x, y) => [x, -y], {
+  initialPoints: [[0.1,2],[0.1,-2],[-0.1,2],[-0.1,-2],[2,0.1],[-2,0.1]],
+  steps: 300, dt: 0.01, color: '#ef4444', lineWidth: 2,
+}));`);
+      const s = await createScene(c, { width: 420, height: 320, theme: 'dark' });
+      s.add(vectorField((x, y) => [x, -y], { density: 12, color: '#444', scale: 0.5, lineWidth: 1 }));
+      s.add(ode((x, y) => [x, -y], {
+        initialPoints: [[0.1, 2], [0.1, -2], [-0.1, 2], [-0.1, -2], [2, 0.1], [-2, 0.1]],
+        steps: 300, dt: 0.01, color: '#ef4444', lineWidth: 2,
+      }));
     }
 
     // =============================================
@@ -674,6 +707,31 @@ scene3d.add(new Parametric3D(t => [Math.cos(t)*2, 1+t*0.1, Math.sin(t)*2], {
       s.add(surface((u, v) => [u, Math.sin(u) * Math.cos(v) * 0.5, v], { u: [-3, 3], v: [-3, 3], resolution: 48, wireframe: true, opacity: 0.8 }));
       s.add(new Parametric3D(t => [Math.cos(t) * 2, 1 + t * 0.1, Math.sin(t) * 2], { t: [0, 4 * Math.PI], color: '#ef4444', lineWidth: 3 }));
       s.add(new Point3D([0, 1, 0], { color: '#f59e0b', size: 8 }));
+    }
+
+    // 9-6: 3D Vector Field
+    {
+      const c = createDemo(objects3d, '3D Vector Field', `
+import { vectorField3D } from 'gpu-math';
+scene3d.add(vectorField3D((x, y, z) => [-y, x, 0], {
+  density: 5, scale: 0.5, color: '#8b5cf6',
+  bounds: [[-2,2],[-2,2],[-2,2]],
+}));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(vectorField3D((x, y, z) => [-y, x, 0], {
+        density: 5, scale: 0.5, color: '#8b5cf6', lineWidth: 1.5,
+        bounds: [[-2, 2], [-2, 2], [-2, 2]],
+      }));
+    }
+
+    // 9-7: 3D Vector Field — divergence
+    {
+      const c = createDemo(objects3d, '3D Vector Field — radial', `
+scene3d.add(vectorField3D((x, y, z) => [x, y, z], {
+  density: 4, color: '#ef4444',
+}));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(vectorField3D((x, y, z) => [x, y, z], { density: 4, color: '#ef4444', lineWidth: 1.5 }));
     }
 
     // =============================================
