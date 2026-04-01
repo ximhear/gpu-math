@@ -17,6 +17,8 @@ export { transform } from './objects/Transform2D.js';
 export { tangentLine, riemannSum } from './objects/Calculus2D.js';
 export { areaUnder } from './objects/AreaUnder2D.js';
 export { complexPlot } from './objects/ComplexPlot2D.js';
+export { region } from './objects/Region2D.js';
+export { implicitCurve } from './objects/ImplicitCurve2D.js';
 
 export { animate } from './animation/animate.js';
 export { animateParam } from './animation/animateParam.js';
@@ -46,6 +48,8 @@ export type { TransformOptions } from './objects/Transform2D.js';
 export type { TangentLineOptions, RiemannSumOptions } from './objects/Calculus2D.js';
 export type { AreaUnderOptions } from './objects/AreaUnder2D.js';
 export type { ComplexPlotOptions, Complex } from './objects/ComplexPlot2D.js';
+export type { RegionOptions } from './objects/Region2D.js';
+export type { ImplicitCurveOptions } from './objects/ImplicitCurve2D.js';
 
 export { defineColorMap } from './engine/colormaps.js';
 export type { ColormapName } from './engine/colormaps.js';

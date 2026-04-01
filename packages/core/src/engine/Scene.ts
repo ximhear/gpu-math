@@ -24,10 +24,15 @@ export interface ParamOptions {
   step?: number;
 }
 
+export interface ExportImageOptions {
+  scale?: number; // default 1, use 2 for retina
+}
+
 export interface Scene2D {
   add(obj: MathObject): void;
   remove(obj: MathObject): void;
   param(name: string, options: ParamOptions): ParamHandle;
+  exportImage(options?: ExportImageOptions): Promise<string>;
   camera: Camera2D;
   destroy(): void;
 }
@@ -104,6 +109,21 @@ export async function createScene(
         onChange(v: number) { handle.value = v; },
       });
       return handle;
+    },
+    async exportImage(opts?: ExportImageOptions): Promise<string> {
+      // WebGPU canvas requires reading pixels after a render
+      // The simplest approach: draw to an offscreen canvas via drawImage
+      return new Promise<string>((resolve) => {
+        requestAnimationFrame(() => {
+          const offscreen = document.createElement('canvas');
+          const scale = opts?.scale ?? 1;
+          offscreen.width = canvas.width * scale;
+          offscreen.height = canvas.height * scale;
+          const ctx2d = offscreen.getContext('2d')!;
+          ctx2d.drawImage(canvas, 0, 0, offscreen.width, offscreen.height);
+          resolve(offscreen.toDataURL('image/png'));
+        });
+      });
     },
     add(obj: MathObject) {
       const hasExplicit = 'hasExplicitColor' in obj && (obj as { hasExplicitColor: boolean }).hasExplicitColor;

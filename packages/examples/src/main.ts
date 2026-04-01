@@ -3,6 +3,7 @@ import {
   plot, parametric, point, vector, line, vectorField, surface,
   Parametric3D, Point3D, Vector3D,
   transform, tangentLine, riemannSum, areaUnder, complexPlot,
+  region, implicitCurve,
   animate, animateParam, sequence, wait,
 } from 'gpu-math';
 import { createDemo } from './shared.js';
@@ -676,7 +677,72 @@ scene3d.add(new Parametric3D(t => [Math.cos(t)*2, 1+t*0.1, Math.sin(t)*2], {
     }
 
     // =============================================
-    // 10. COMPLEX FUNCTIONS
+    // 10. REGIONS & IMPLICIT CURVES
+    // =============================================
+    const regions = category('Regions & Implicit Curves');
+
+    // Region between two functions
+    {
+      const c = createDemo(regions, 'Region between sin(x) and cos(x)', `
+import { region } from 'gpu-math';
+scene.add(plot(x => Math.sin(x), { label: 'sin(x)' }));
+scene.add(plot(x => Math.cos(x), { label: 'cos(x)' }));
+scene.add(region({ above: x => Math.sin(x), below: x => Math.cos(x),
+  range: [-Math.PI, Math.PI], color: '#8b5cf6', opacity: 0.2 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(plot(x => Math.sin(x), { label: 'sin(x)', lineWidth: 2 }));
+      s.add(plot(x => Math.cos(x), { label: 'cos(x)', lineWidth: 2 }));
+      s.add(region({ above: x => Math.sin(x), below: x => Math.cos(x), range: [-Math.PI, Math.PI], color: '#8b5cf6', opacity: 0.2 }));
+    }
+
+    // y < x² region
+    {
+      const c = createDemo(regions, 'Region: y < x²', `
+scene.add(plot(x => x*x, { label: 'x²' }));
+scene.add(region({ below: x => x*x, range: [-3, 3], color: '#3b82f6', opacity: 0.15 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(plot(x => x * x, { label: 'x²', lineWidth: 2 }));
+      s.add(region({ below: x => x * x, range: [-3, 3], color: '#3b82f6', opacity: 0.15 }));
+    }
+
+    // Implicit circle
+    {
+      const c = createDemo(regions, 'Implicit: x² + y² = 1 (unit circle)', `
+import { implicitCurve } from 'gpu-math';
+scene.add(implicitCurve((x, y) => x*x + y*y - 1, {
+  color: '#10b981', lineWidth: 2.5,
+}));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(implicitCurve((x, y) => x * x + y * y - 1, { color: '#10b981', lineWidth: 2.5, label: 'x²+y²=1' }));
+    }
+
+    // Implicit ellipse
+    {
+      const c = createDemo(regions, 'Implicit: x²/4 + y² = 1 (ellipse)', `
+scene.add(implicitCurve((x, y) => x*x/4 + y*y - 1, { color: '#f59e0b' }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(implicitCurve((x, y) => x * x / 4 + y * y - 1, { color: '#f59e0b', lineWidth: 2.5, label: 'ellipse' }));
+    }
+
+    // Implicit hyperbola
+    {
+      const c = createDemo(regions, 'Implicit: x² - y² = 1 (hyperbola)', `
+scene.add(implicitCurve((x, y) => x*x - y*y - 1, { color: '#ef4444' }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(implicitCurve((x, y) => x * x - y * y - 1, { color: '#ef4444', lineWidth: 2.5, label: 'x²-y²=1' }));
+    }
+
+    // Implicit figure-eight (lemniscate)
+    {
+      const c = createDemo(regions, 'Lemniscate of Bernoulli', `
+scene.add(implicitCurve((x, y) =>
+  (x*x + y*y)**2 - 4*(x*x - y*y), { color: '#ec4899', range: [-3, 3] }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(implicitCurve((x, y) => (x * x + y * y) ** 2 - 4 * (x * x - y * y), { color: '#ec4899', lineWidth: 2.5, range: [-3, 3], label: 'lemniscate' }));
+    }
+
+    // =============================================
+    // 11. COMPLEX FUNCTIONS
     // =============================================
     const complex = category('Complex Functions (Domain Coloring)');
 
