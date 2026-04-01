@@ -3,7 +3,8 @@ import {
   plot, parametric, point, vector, line, vectorField, surface,
   Parametric3D, Point3D, Vector3D,
   transform, tangentLine, riemannSum, areaUnder, complexPlot,
-  region, implicitCurve, ode, vectorField3D,
+  region, implicitCurve, ode, contourPlot, vectorField3D,
+  solidOfRevolution, piecewise, arc, scatter, bar, histogram,
   animate, animateParam, sequence, wait,
 } from 'gpu-math';
 import { createDemo } from './shared.js';
@@ -573,6 +574,131 @@ scene.add(areaUnder(gauss, { from: -1, to: 1, color: '#10b981', opacity: 0.4 }))
     }
 
     // =============================================
+    // 7.6 OPEN DOTS (discontinuous functions)
+    // =============================================
+    const openDots = category('Discontinuous Functions (Open Dots)');
+
+    // Piecewise with open/closed dots
+    {
+      const c = createDemo(openDots, 'Piecewise Function', `
+// f(x) = x+1 for x<1, 3 for x≥1
+scene.add(plot(x => x < 1 ? x + 1 : 3, { lineWidth: 2 }));
+scene.add(point([1, 2], { color: '#3b82f6', size: 7, filled: false })); // open
+scene.add(point([1, 3], { color: '#3b82f6', size: 7 }));                // closed`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(plot(x => x < 0.99 ? x + 1 : 3, { lineWidth: 2.5 }));
+      s.add(point([1, 2], { color: '#3b82f6', size: 8, filled: false, label: 'open' }));
+      s.add(point([1, 3], { color: '#3b82f6', size: 8, label: 'closed' }));
+    }
+
+    // Limit visualization
+    {
+      const c = createDemo(openDots, 'Limit — hole at x=2', `
+// f(x) = (x²-4)/(x-2) has a hole at x=2
+scene.add(plot(x => Math.abs(x-2) < 0.01 ? NaN : (x*x-4)/(x-2), { lineWidth: 2 }));
+scene.add(point([2, 4], { filled: false, color: '#ef4444', size: 8 })); // removable`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(plot(x => Math.abs(x - 2) < 0.01 ? NaN : (x * x - 4) / (x - 2), { lineWidth: 2.5, label: '(x²-4)/(x-2)' }));
+      s.add(point([2, 4], { filled: false, color: '#ef4444', size: 9, label: 'hole at (2,4)' }));
+    }
+
+    // =============================================
+    // 7.7 CONTOUR PLOTS
+    // =============================================
+    const contours = category('Contour Plots');
+
+    // x² + y²
+    {
+      const c = createDemo(contours, 'Contours: x² + y²', `
+import { contourPlot } from 'gpu-math';
+scene.add(contourPlot((x, y) => x*x + y*y, {
+  levels: 10, color: '#3b82f6', range: [-4, 4],
+}));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(contourPlot((x, y) => x * x + y * y, { levels: 10, color: '#3b82f6', range: [-4, 4] }));
+    }
+
+    // sin(x) * cos(y)
+    {
+      const c = createDemo(contours, 'Contours: sin(x)·cos(y)', `
+scene.add(contourPlot((x, y) => Math.sin(x) * Math.cos(y), {
+  levels: 12, color: '#10b981', range: [-5, 5],
+}));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(contourPlot((x, y) => Math.sin(x) * Math.cos(y), { levels: 12, color: '#10b981', range: [-5, 5] }));
+    }
+
+    // Saddle: x² - y²
+    {
+      const c = createDemo(contours, 'Contours: x² - y² (saddle)', `
+scene.add(contourPlot((x, y) => x*x - y*y, {
+  levels: [-4,-3,-2,-1,0,1,2,3,4], color: '#f59e0b',
+}));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(contourPlot((x, y) => x * x - y * y, { levels: [-4, -3, -2, -1, 0, 1, 2, 3, 4], color: '#f59e0b', range: [-4, 4] }));
+    }
+
+    // Gradient field + contour
+    {
+      const c = createDemo(contours, 'Contour + Gradient Field', `
+const f = (x, y) => x*x + y*y;
+scene.add(contourPlot(f, { levels: 8, color: '#555' }));
+scene.add(vectorField((x, y) => [2*x, 2*y], { // grad(f)
+  density: 12, color: '#ef4444', scale: 0.3,
+}));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(contourPlot((x, y) => x * x + y * y, { levels: 8, color: '#555', range: [-4, 4] }));
+      s.add(vectorField((x, y) => [2 * x, 2 * y], { density: 12, color: '#ef4444', scale: 0.3, lineWidth: 1 }));
+    }
+
+    // =============================================
+    // 7.8 SOLIDS OF REVOLUTION
+    // =============================================
+    const solids = category('Solids of Revolution');
+
+    // y = sqrt(x) around x-axis
+    {
+      const c = createDemo(solids, 'y = √x rotated around x-axis', `
+import { solidOfRevolution } from 'gpu-math';
+scene3d.add(solidOfRevolution(x => Math.sqrt(x), {
+  from: 0, to: 4, axis: 'x', wireframe: true,
+}));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(solidOfRevolution(x => Math.sqrt(x), { from: 0, to: 4, axis: 'x', wireframe: true }));
+    }
+
+    // y = sin(x) around x-axis
+    {
+      const c = createDemo(solids, 'y = sin(x) rotated (0 to π)', `
+scene3d.add(solidOfRevolution(x => Math.sin(x), {
+  from: 0, to: Math.PI, axis: 'x',
+}));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(solidOfRevolution(x => Math.sin(x), { from: 0, to: Math.PI, axis: 'x' }));
+    }
+
+    // y = x² around y-axis (shell method visualization)
+    {
+      const c = createDemo(solids, 'y = 1/x rotated (wireframeOnly)', `
+scene3d.add(solidOfRevolution(x => 1/x, {
+  from: 0.5, to: 3, axis: 'x', wireframeOnly: true,
+}));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(solidOfRevolution(x => 1 / x, { from: 0.5, to: 3, axis: 'x', wireframeOnly: true }));
+    }
+
+    // Vase shape
+    {
+      const c = createDemo(solids, 'Vase shape — custom profile', `
+scene3d.add(solidOfRevolution(
+  y => 0.5 + 0.3*Math.sin(y*2),
+  { from: 0, to: 4, axis: 'y', colorMap: 'plasma' },
+));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(solidOfRevolution(y => 0.5 + 0.3 * Math.sin(y * 2), { from: 0, to: 4, axis: 'y', colorMap: 'plasma' }));
+    }
+
+    // =============================================
     // 8. 3D SURFACES
     // =============================================
     const surfaces = category('3D Surfaces');
@@ -630,6 +756,223 @@ scene3d.add(surface((u, v) => [u, Math.sin(u)*Math.cos(v), v], {
 }));`);
       const s = await createScene3D(c, { width: 420, height: 320 });
       s.add(surface((u, v) => [u, Math.sin(u) * Math.cos(v), v], { u: [-3, 3], v: [-3, 3], resolution: 48, colorMap: cmap }));
+    }
+
+    // =============================================
+    // 8.5 3D SHAPES (parametric surfaces as geometric primitives)
+    // =============================================
+    const shapes = category('3D Shapes');
+
+    // Cone
+    {
+      const c = createDemo(shapes, 'Cone', `
+scene3d.add(surface((u, v) => [
+  v * Math.cos(u), v, v * Math.sin(u),
+], { u: [0, 2*Math.PI], v: [0, 2], resolution: 48 }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => [v * Math.cos(u), v, v * Math.sin(u)], { u: [0, 2 * Math.PI], v: [0, 2], resolution: 48 }));
+    }
+
+    // Sphere
+    {
+      const c = createDemo(shapes, 'Sphere', `
+scene3d.add(surface((u, v) => [
+  Math.sin(v) * Math.cos(u),
+  Math.cos(v),
+  Math.sin(v) * Math.sin(u),
+], { u: [0, 2*Math.PI], v: [0, Math.PI], resolution: 48 }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => [
+        Math.sin(v) * Math.cos(u),
+        Math.cos(v),
+        Math.sin(v) * Math.sin(u),
+      ], { u: [0, 2 * Math.PI], v: [0, Math.PI], resolution: 48 }));
+    }
+
+    // Cylinder
+    {
+      const c = createDemo(shapes, 'Cylinder', `
+scene3d.add(surface((u, v) => [
+  Math.cos(u), v, Math.sin(u),
+], { u: [0, 2*Math.PI], v: [-1.5, 1.5], resolution: 48 }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => [Math.cos(u), v, Math.sin(u)], { u: [0, 2 * Math.PI], v: [-1.5, 1.5], resolution: 48 }));
+    }
+
+    // Torus
+    {
+      const c = createDemo(shapes, 'Torus', `
+const R = 2, r = 0.7;
+scene3d.add(surface((u, v) => [
+  (R + r*Math.cos(v)) * Math.cos(u),
+  r * Math.sin(v),
+  (R + r*Math.cos(v)) * Math.sin(u),
+], { u: [0, 2*Math.PI], v: [0, 2*Math.PI], resolution: 64 }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      const R = 2, r = 0.7;
+      s.add(surface((u, v) => [
+        (R + r * Math.cos(v)) * Math.cos(u),
+        r * Math.sin(v),
+        (R + r * Math.cos(v)) * Math.sin(u),
+      ], { u: [0, 2 * Math.PI], v: [0, 2 * Math.PI], resolution: 64 }));
+    }
+
+    // Möbius strip
+    {
+      const c = createDemo(shapes, 'Möbius Strip', `
+scene3d.add(surface((u, v) => {
+  const half = v / 2;
+  return [
+    (1 + half * Math.cos(u/2)) * Math.cos(u),
+    half * Math.sin(u/2),
+    (1 + half * Math.cos(u/2)) * Math.sin(u),
+  ];
+}, { u: [0, 2*Math.PI], v: [-0.4, 0.4], resolution: 80, wireframe: true }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => {
+        const half = v / 2;
+        return [
+          (1 + half * Math.cos(u / 2)) * Math.cos(u),
+          half * Math.sin(u / 2),
+          (1 + half * Math.cos(u / 2)) * Math.sin(u),
+        ];
+      }, { u: [0, 2 * Math.PI], v: [-0.4, 0.4], resolution: 80, wireframe: true }));
+    }
+
+    // Klein bottle (immersion in 3D)
+    {
+      const c = createDemo(shapes, 'Klein Bottle (immersion)', `
+scene3d.add(surface((u, v) => {
+  const cu = Math.cos(u), su = Math.sin(u);
+  const cv = Math.cos(v), sv = Math.sin(v);
+  const r = 4*(1 - cu/2);
+  let x, y, z;
+  if (u < Math.PI) {
+    x = 6*cu*(1+su) + r*cu*cv;
+    z = 16*su + r*su*cv;
+  } else {
+    x = 6*cu*(1+su) - r*cv;
+    z = 16*su;
+  }
+  y = r * sv;
+  return [x/10, y/10, z/10];
+}, { u: [0, 2*Math.PI], v: [0, 2*Math.PI], resolution: 80 }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => {
+        const cu = Math.cos(u), su = Math.sin(u);
+        const cv = Math.cos(v), sv = Math.sin(v);
+        const rr = 4 * (1 - cu / 2);
+        let x: number, z: number;
+        if (u < Math.PI) {
+          x = 6 * cu * (1 + su) + rr * cu * cv;
+          z = 16 * su + rr * su * cv;
+        } else {
+          x = 6 * cu * (1 + su) - rr * cv;
+          z = 16 * su;
+        }
+        const y = rr * sv;
+        return [x / 10, y / 10, z / 10];
+      }, { u: [0, 2 * Math.PI], v: [0, 2 * Math.PI], resolution: 80 }));
+    }
+
+    // Wireframe versions
+    // Cone wireframe
+    {
+      const c = createDemo(shapes, 'Cone (wireframe)', `
+scene3d.add(surface((u, v) => [
+  v * Math.cos(u), v, v * Math.sin(u),
+], { u: [0, 2*Math.PI], v: [0, 2], wireframe: true }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => [v * Math.cos(u), v, v * Math.sin(u)], { u: [0, 2 * Math.PI], v: [0, 2], resolution: 48, wireframe: true }));
+    }
+
+    // Sphere wireframe
+    {
+      const c = createDemo(shapes, 'Sphere (wireframe)', `
+scene3d.add(surface((u, v) => [
+  Math.sin(v)*Math.cos(u), Math.cos(v), Math.sin(v)*Math.sin(u),
+], { u: [0, 2*Math.PI], v: [0, Math.PI], wireframe: true }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => [
+        Math.sin(v) * Math.cos(u), Math.cos(v), Math.sin(v) * Math.sin(u),
+      ], { u: [0, 2 * Math.PI], v: [0, Math.PI], resolution: 48, wireframe: true }));
+    }
+
+    // Torus wireframe
+    {
+      const c = createDemo(shapes, 'Torus (wireframe)', `
+const R = 2, r = 0.7;
+scene3d.add(surface((u, v) => [
+  (R+r*Math.cos(v))*Math.cos(u), r*Math.sin(v), (R+r*Math.cos(v))*Math.sin(u),
+], { u: [0, 2*Math.PI], v: [0, 2*Math.PI], wireframe: true }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      const R2 = 2, r2 = 0.7;
+      s.add(surface((u, v) => [
+        (R2 + r2 * Math.cos(v)) * Math.cos(u),
+        r2 * Math.sin(v),
+        (R2 + r2 * Math.cos(v)) * Math.sin(u),
+      ], { u: [0, 2 * Math.PI], v: [0, 2 * Math.PI], resolution: 64, wireframe: true }));
+    }
+
+    // Klein bottle wireframe
+    {
+      const c = createDemo(shapes, 'Klein Bottle (wireframe)', `
+// Same Klein bottle with wireframe: true`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => {
+        const cu = Math.cos(u), su = Math.sin(u);
+        const cv = Math.cos(v), sv = Math.sin(v);
+        const rr = 4 * (1 - cu / 2);
+        let x: number, z: number;
+        if (u < Math.PI) {
+          x = 6 * cu * (1 + su) + rr * cu * cv;
+          z = 16 * su + rr * su * cv;
+        } else {
+          x = 6 * cu * (1 + su) - rr * cv;
+          z = 16 * su;
+        }
+        const y = rr * sv;
+        return [x / 10, y / 10, z / 10];
+      }, { u: [0, 2 * Math.PI], v: [0, 2 * Math.PI], resolution: 80, wireframe: true }));
+    }
+
+    // wireframeOnly versions (lines only, no solid fill)
+    // Sphere wireframeOnly
+    {
+      const c = createDemo(shapes, 'Sphere (wireframeOnly)', `
+scene3d.add(surface((u, v) => [
+  Math.sin(v)*Math.cos(u), Math.cos(v), Math.sin(v)*Math.sin(u),
+], { wireframeOnly: true }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => [
+        Math.sin(v) * Math.cos(u), Math.cos(v), Math.sin(v) * Math.sin(u),
+      ], { u: [0, 2 * Math.PI], v: [0, Math.PI], resolution: 32, wireframeOnly: true }));
+    }
+
+    // Torus wireframeOnly
+    {
+      const c = createDemo(shapes, 'Torus (wireframeOnly)', `
+const R = 2, r = 0.7;
+scene3d.add(surface((u, v) => [
+  (R+r*Math.cos(v))*Math.cos(u), r*Math.sin(v), (R+r*Math.cos(v))*Math.sin(u),
+], { wireframeOnly: true }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      const R3 = 2, r3 = 0.7;
+      s.add(surface((u, v) => [
+        (R3 + r3 * Math.cos(v)) * Math.cos(u),
+        r3 * Math.sin(v),
+        (R3 + r3 * Math.cos(v)) * Math.sin(u),
+      ], { u: [0, 2 * Math.PI], v: [0, 2 * Math.PI], resolution: 48, wireframeOnly: true }));
+    }
+
+    // Cone wireframeOnly
+    {
+      const c = createDemo(shapes, 'Cone (wireframeOnly)', `
+scene3d.add(surface((u, v) => [
+  v*Math.cos(u), v, v*Math.sin(u),
+], { wireframeOnly: true }));`);
+      const s = await createScene3D(c, { width: 420, height: 320 });
+      s.add(surface((u, v) => [v * Math.cos(u), v, v * Math.sin(u)], { u: [0, 2 * Math.PI], v: [0, 2], resolution: 32, wireframeOnly: true }));
     }
 
     // =============================================
@@ -859,7 +1202,159 @@ scene.add(complexPlot(z => {
     }
 
     // =============================================
-    // 11. THEMES
+    // 11. STATISTICS (bar, histogram, scatter)
+    // =============================================
+    const stats = category('Statistics');
+
+    // Bar chart
+    {
+      const c = createDemo(stats, 'Bar Chart', `
+import { bar } from 'gpu-math';
+scene.add(bar([
+  { x: 1, height: 3 }, { x: 2, height: 7 }, { x: 3, height: 5 },
+  { x: 4, height: 9 }, { x: 5, height: 4 }, { x: 6, height: 6 },
+], { color: '#3b82f6', opacity: 0.6 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(bar([
+        { x: 1, height: 3 }, { x: 2, height: 7 }, { x: 3, height: 5 },
+        { x: 4, height: 9 }, { x: 5, height: 4 }, { x: 6, height: 6 },
+      ], { color: '#3b82f6', opacity: 0.6 }));
+    }
+
+    // Histogram (normal distribution samples)
+    {
+      const c = createDemo(stats, 'Histogram — Normal Distribution', `
+import { histogram } from 'gpu-math';
+// Generate 1000 normal random samples
+const data = Array.from({length: 1000}, () =>
+  Array.from({length:12}, () => Math.random()).reduce((a,b) => a+b) - 6);
+scene.add(histogram(data, 20, { color: '#10b981', opacity: 0.5 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      // Box-Muller approximation via central limit theorem
+      const data: number[] = [];
+      for (let i = 0; i < 1000; i++) {
+        let sum = 0;
+        for (let j = 0; j < 12; j++) sum += Math.random();
+        data.push(sum - 6);
+      }
+      s.add(histogram(data, 20, { color: '#10b981', opacity: 0.5 }));
+      // Overlay normal PDF
+      s.add(plot(x => 1000 * 0.6 * Math.exp(-x * x / 2) / Math.sqrt(2 * Math.PI), { color: '#ef4444', lineWidth: 2, label: 'N(0,1) fit' }));
+    }
+
+    // Binomial distribution
+    {
+      const c = createDemo(stats, 'Binomial Distribution B(10, 0.3)', `
+const n = 10, p = 0.3;
+const bars = Array.from({length: n+1}, (_, k) => ({
+  x: k, height: comb(n,k) * p**k * (1-p)**(n-k),
+}));
+scene.add(bar(bars, { color: '#8b5cf6' }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      const n = 10, p = 0.3;
+      const binom = (nn: number, kk: number) => {
+        let c = 1;
+        for (let i = 0; i < kk; i++) c = c * (nn - i) / (i + 1);
+        return c;
+      };
+      const bars = Array.from({ length: n + 1 }, (_, k) => ({
+        x: k, height: binom(n, k) * p ** k * (1 - p) ** (n - k), width: 0.8,
+      }));
+      s.add(bar(bars, { color: '#8b5cf6', opacity: 0.7 }));
+    }
+
+    // Scatter plot
+    {
+      const c = createDemo(stats, 'Scatter Plot — Correlation', `
+import { scatter } from 'gpu-math';
+const pts = Array.from({length: 200}, () => {
+  const x = (Math.random() - 0.5) * 8;
+  return [x, 0.5*x + (Math.random()-0.5)*3];
+});
+scene.add(scatter(pts, { color: '#f59e0b', size: 4 }));
+scene.add(plot(x => 0.5*x, { color: '#ef4444', dash: [6,4] })); // regression`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      const pts: [number, number][] = Array.from({ length: 200 }, () => {
+        const x = (Math.random() - 0.5) * 8;
+        return [x, 0.5 * x + (Math.random() - 0.5) * 3];
+      });
+      s.add(scatter(pts, { color: '#f59e0b', size: 4 }));
+      s.add(plot(x => 0.5 * x, { color: '#ef4444', dash: [6, 4], lineWidth: 2, label: 'regression' }));
+    }
+
+    // Sequence convergence (scatter as discrete points)
+    {
+      const c = createDemo(stats, 'Sequence Convergence: aₙ = 1/n', `
+const pts = Array.from({length: 50}, (_, i) => [i+1, 1/(i+1)]);
+scene.add(scatter(pts, { color: '#3b82f6', size: 4 }));
+scene.add(plot(x => 0, { color: '#ef4444', dash: [4,4] })); // limit`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      const seqPts: [number, number][] = Array.from({ length: 50 }, (_, i) => [i + 1, 1 / (i + 1)]);
+      s.add(scatter(seqPts, { color: '#3b82f6', size: 4 }));
+      s.add(plot(() => 0, { color: '#ef4444', dash: [4, 4], lineWidth: 1, label: 'limit = 0' }));
+    }
+
+    // =============================================
+    // 12. PIECEWISE & ARC
+    // =============================================
+    const pwArc = category('Piecewise Functions & Arcs');
+
+    // Piecewise function
+    {
+      const c = createDemo(pwArc, 'Piecewise Function', `
+import { piecewise } from 'gpu-math';
+const pw = piecewise([
+  { fn: x => x + 2, range: [-3, 1], rightClosed: false },
+  { fn: x => 3,     range: [1, 3],  leftClosed: true },
+  { fn: x => -x + 6, range: [3, 6], leftClosed: false },
+]);
+scene.add(pw);
+for (const d of pw.getEndpointDots())
+  scene.add(point(d.pos, { filled: d.filled, size: 7 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      const pw = piecewise([
+        { fn: x => x + 2, range: [-3, 1], rightClosed: false },
+        { fn: () => 3, range: [1, 3], leftClosed: true, rightClosed: true },
+        { fn: x => -x + 6, range: [3, 6], leftClosed: false },
+      ], { lineWidth: 2.5 });
+      s.add(pw);
+      for (const d of pw.getEndpointDots()) {
+        s.add(point(d.pos, { filled: d.filled, color: pw.color, size: 8 }));
+      }
+    }
+
+    // Arc — angle between vectors
+    {
+      const c = createDemo(pwArc, 'Arc — Angle Between Vectors', `
+import { arc } from 'gpu-math';
+scene.add(vector([0,0], [3,0], { color: '#3b82f6' }));
+scene.add(vector([0,0], [2,2], { color: '#ef4444' }));
+scene.add(arc([0,0], 0.6, 0, Math.PI/4, { color: '#f59e0b', lineWidth: 2 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      s.add(vector([0, 0], [3, 0], { color: '#3b82f6', lineWidth: 2, label: 'u' }));
+      s.add(vector([0, 0], [2, 2], { color: '#ef4444', lineWidth: 2, label: 'v' }));
+      s.add(arc([0, 0], 0.6, 0, Math.PI / 4, { color: '#f59e0b', lineWidth: 2 }));
+    }
+
+    // Arc — unit circle angle
+    {
+      const c = createDemo(pwArc, 'Unit Circle — θ = 60°', `
+const theta = Math.PI / 3;
+scene.add(parametric(t => [Math.cos(t), Math.sin(t)], { t: [0, 2*Math.PI], color: '#555' }));
+scene.add(vector([0,0], [Math.cos(theta), Math.sin(theta)], { color: '#fff' }));
+scene.add(arc([0,0], 0.3, 0, theta, { color: '#10b981', lineWidth: 2 }));`);
+      const s = await createScene(c, { width: 420, height: 320 });
+      const theta = Math.PI / 3;
+      s.add(parametric(t => [Math.cos(t), Math.sin(t)], { t: [0, 2 * Math.PI], color: '#555', lineWidth: 1 }));
+      s.add(vector([0, 0], [Math.cos(theta), Math.sin(theta)], { color: '#ffffff', lineWidth: 2 }));
+      s.add(arc([0, 0], 0.3, 0, theta, { color: '#10b981', lineWidth: 2.5 }));
+      s.add(line([Math.cos(theta), 0], [Math.cos(theta), Math.sin(theta)], { color: '#3b82f6', dash: [4, 3], label: 'sin θ' }));
+      s.add(line([0, 0], [Math.cos(theta), 0], { color: '#ef4444', dash: [4, 3], label: 'cos θ' }));
+      s.add(point([0, 0], { color: '#fff', size: 3 }));
+    }
+
+    // =============================================
+    // 13. THEMES
     // =============================================
     const themes = category('Themes');
 

@@ -10,6 +10,7 @@ export interface PointOptions {
   size?: number;
   label?: string;
   opacity?: number;
+  filled?: boolean; // default true. false = open dot (ring)
 }
 
 export class Point2D extends MathObject {
@@ -31,6 +32,7 @@ export class Point2D extends MathObject {
       size: options?.size ?? 6,
       label: options?.label ?? '',
       opacity: options?.opacity ?? 1,
+      filled: options?.filled ?? true,
     };
   }
 
@@ -87,7 +89,7 @@ export class Point2D extends MathObject {
     const [r, g, b] = hexToRGBA(this.options.color);
     const data = new Float32Array([
       r, g, b, this.options.opacity,
-      this.pos[0], this.pos[1], this.options.size, 0,
+      this.pos[0], this.pos[1], this.options.size, this.options.filled ? 1.0 : 0.0,
     ]);
     writeBuffer(this.gpu.device.queue, this.pointBuffer, 0, data);
   }

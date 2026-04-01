@@ -63,7 +63,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
   // Color from height (colormap injected at build time)
   let baseColor = colormap(in.height);
 
-  // Wireframe overlay
+  // Wireframe
   var wire = 0.0;
   if (surface.wireframe > 0.0) {
     let grid = abs(fract(in.uv * surface.wireWidth - 0.5) - 0.5);
@@ -71,8 +71,18 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     wire = 1.0 - smoothstep(0.0, 0.03, lineVal);
   }
 
+  // wireframeOnly mode: discard non-wire pixels
+  if (surface.wireframe > 1.5 && wire < 0.01) {
+    discard;
+  }
+
   var finalColor = baseColor * lighting;
-  finalColor = mix(finalColor, vec3(1.0), wire * 0.3);
+  if (surface.wireframe > 1.5) {
+    // wireframeOnly: wire lines use colormap color with full brightness
+    finalColor = baseColor * (ambient + 0.6);
+  } else {
+    finalColor = mix(finalColor, vec3(1.0), wire * 0.3);
+  }
 
   return vec4(finalColor, surface.opacity);
 }

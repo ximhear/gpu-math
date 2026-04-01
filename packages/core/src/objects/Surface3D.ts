@@ -11,6 +11,7 @@ export interface SurfaceOptions {
   resolution?: number;
   colorMap?: string;
   wireframe?: boolean;
+  wireframeOnly?: boolean;
   opacity?: number;
   label?: string;
 }
@@ -38,6 +39,7 @@ export class Surface3D extends MathObject3D {
       resolution: options?.resolution ?? 64,
       colorMap: options?.colorMap ?? 'viridis',
       wireframe: options?.wireframe ?? false,
+      wireframeOnly: options?.wireframeOnly ?? false,
       opacity: options?.opacity ?? 1,
       label: options?.label ?? '',
     };
@@ -203,7 +205,7 @@ export class Surface3D extends MathObject3D {
       0.993, 0.906, 0.144, 1.0,
       // opacity, wireframe, wireWidth, pad
       this.options.opacity,
-      this.options.wireframe ? 1.0 : 0.0,
+      this.options.wireframeOnly ? 2.0 : (this.options.wireframe ? 1.0 : 0.0),
       this.options.resolution,
       0,
     ]);

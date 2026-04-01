@@ -20,7 +20,13 @@ export { complexPlot } from './objects/ComplexPlot2D.js';
 export { region } from './objects/Region2D.js';
 export { implicitCurve } from './objects/ImplicitCurve2D.js';
 export { ode } from './objects/ODE2D.js';
+export { contourPlot } from './objects/ContourPlot2D.js';
 export { vectorField3D } from './objects/VectorField3D.js';
+export { solidOfRevolution } from './objects/SolidOfRevolution.js';
+export { piecewise } from './objects/Piecewise2D.js';
+export { arc } from './objects/Arc2D.js';
+export { scatter } from './objects/Scatter2D.js';
+export { bar, histogram } from './objects/Bar2D.js';
 
 export { animate } from './animation/animate.js';
 export { animateParam } from './animation/animateParam.js';
@@ -53,7 +59,13 @@ export type { ComplexPlotOptions, Complex } from './objects/ComplexPlot2D.js';
 export type { RegionOptions } from './objects/Region2D.js';
 export type { ImplicitCurveOptions } from './objects/ImplicitCurve2D.js';
 export type { ODEOptions } from './objects/ODE2D.js';
+export type { ContourPlotOptions } from './objects/ContourPlot2D.js';
 export type { VectorField3DOptions } from './objects/VectorField3D.js';
+export type { SolidOfRevolutionOptions } from './objects/SolidOfRevolution.js';
+export type { PiecewiseSegment, PiecewiseOptions } from './objects/Piecewise2D.js';
+export type { ArcOptions } from './objects/Arc2D.js';
+export type { ScatterOptions } from './objects/Scatter2D.js';
+export type { BarData, BarOptions } from './objects/Bar2D.js';
 
 export { defineColorMap } from './engine/colormaps.js';
 export type { ColormapName } from './engine/colormaps.js';
