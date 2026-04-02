@@ -40,11 +40,11 @@ async function main() {
     opacity: 0.35,
   }));
 
-  // 라벨들 — 곡선과 겹치지 않게 배치 (fontSize 2배)
-  scene.add(label('O', [0, 0], { color: '#333', fontSize: 32, offset: [-26, 36] }));
-  scene.add(label('y = x²', [-5.0, 5], { color: '#333', fontSize: 30, fontStyle: 'italic' }));
-  scene.add(label('y = x − 2', [3.8, 1.0], { color: '#333', fontSize: 30, fontStyle: 'italic' }));
-  scene.add(label('x = 2', [2.1, -4.5], { color: '#333', fontSize: 30, fontStyle: 'italic' }));
+  // 라벨들 — $...$ 로 감싸면 LaTeX 수식으로 렌더링
+  scene.add(label('$O$', [0, 0], { color: '#333', fontSize: 28, offset: [-26, 36] }));
+  scene.add(label('$y = x^2$', [-5.0, 5], { color: '#333', fontSize: 26 }));
+  scene.add(label('$y = x - 2$', [3.8, 1.0], { color: '#333', fontSize: 26 }));
+  scene.add(label('$x = 2$', [2.1, -4.5], { color: '#333', fontSize: 26 }));
 
   // 원점 표시
   scene.add(point([0, 0], { color: '#333', size: 3 }));

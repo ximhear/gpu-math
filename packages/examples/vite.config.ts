@@ -27,6 +27,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         docs: resolve(__dirname, 'docs.html'),
         suneung7: resolve(__dirname, 'suneung7.html'),
+        latexDemo: resolve(__dirname, 'latex-demo.html'),
       },
     },
   },

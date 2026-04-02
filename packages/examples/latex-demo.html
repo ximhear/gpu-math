@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gpu-math — LaTeX Labels Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #111;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+      gap: 16px;
+    }
+    h1 { font-size: 1.3rem; font-weight: 400; }
+    p { color: #888; font-size: 0.9rem; }
+    .scene { position: relative; }
+    canvas { border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>LaTeX Labels Demo</h1>
+  <p>Labels wrapped in $...$ are rendered with KaTeX</p>
+  <div class="scene"><canvas id="canvas"></canvas></div>
+  <script type="module" src="/src/latex-demo.ts"></script>
+</body>
+</html>

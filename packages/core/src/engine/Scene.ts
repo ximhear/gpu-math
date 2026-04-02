@@ -122,7 +122,18 @@ export async function createScene(
         });
       }
     }
+    // Canvas2D overlay (fallback, still works)
     annotationOverlay.setAnnotations(data);
+    // WebGPU texture-based text (rendered in GPU pass)
+    renderer.setTextEntries(data.map(d => ({
+      text: d.text,
+      worldPos: d.worldPos,
+      color: d.color,
+      fontSize: d.fontSize,
+      fontStyle: d.fontStyle,
+      fontFamily: theme.font.family,
+      offset: d.offset,
+    })));
   }
 
   function updateHover() {

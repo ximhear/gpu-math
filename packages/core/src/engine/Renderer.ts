@@ -2,12 +2,14 @@ import type { GPUState, Theme } from '../types.js';
 import type { Camera2D } from '../camera/Camera2D.js';
 import type { MathObject } from '../objects/MathObject.js';
 import { GridRenderer } from './GridRenderer.js';
+import { TextRenderer, type TextEntry } from './TextRenderer.js';
 
 export class Renderer {
   private gpu: GPUState;
   private camera: Camera2D;
   private objects: MathObject[] = [];
   private gridRenderer: GridRenderer;
+  private textRenderer: TextRenderer;
   private clearColor = { r: 0.11, g: 0.11, b: 0.11, a: 1 };
   private running = false;
   private depthTexture: GPUTexture | null = null;
@@ -16,6 +18,7 @@ export class Renderer {
     this.gpu = gpu;
     this.camera = camera;
     this.gridRenderer = new GridRenderer(gpu);
+    this.textRenderer = new TextRenderer(gpu);
     this.ensureDepthTexture();
   }
 
@@ -101,6 +104,30 @@ export class Renderer {
 
     pass.end();
     device.queue.submit([encoder.finish()]);
+
+    // Render text labels in a separate pass (on top of everything, load existing content)
+    if (this.textRenderer.hasEntries()) {
+      const encoder2 = device.createCommandEncoder();
+      const pass2 = encoder2.beginRenderPass({
+        colorAttachments: [{
+          view: context.getCurrentTexture().createView(),
+          loadOp: 'load' as GPULoadOp,
+          storeOp: 'store' as GPUStoreOp,
+        }],
+        depthStencilAttachment: {
+          view: this.depthTexture!.createView(),
+          depthLoadOp: 'load' as GPULoadOp,
+          depthStoreOp: 'store' as GPUStoreOp,
+        },
+      });
+      this.textRenderer.render(pass2, cameraUniforms);
+      pass2.end();
+      device.queue.submit([encoder2.finish()]);
+    }
+  }
+
+  setTextEntries(entries: TextEntry[]): void {
+    this.textRenderer.setEntries(entries);
   }
 
   destroy(): void {
@@ -109,6 +136,7 @@ export class Renderer {
       obj.destroy();
     }
     this.objects = [];
+    this.textRenderer.destroy();
     this.gridRenderer.destroy();
     this.depthTexture?.destroy();
   }

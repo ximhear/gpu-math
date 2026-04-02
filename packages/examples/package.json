@@ -8,10 +8,11 @@
     "build": "vite build"
   },
   "dependencies": {
-    "gpu-math": "workspace:*"
+    "gpu-math": "workspace:*",
+    "katex": "^0.16.44"
   },
   "devDependencies": {
-    "vite": "^6.3.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vite": "^6.3.0"
   }
 }
