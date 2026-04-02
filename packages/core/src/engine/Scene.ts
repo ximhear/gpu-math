@@ -153,8 +153,7 @@ export async function createScene(
       return handle;
     },
     async exportImage(opts?: ExportImageOptions): Promise<string> {
-      // WebGPU canvas requires reading pixels after a render
-      // The simplest approach: draw to an offscreen canvas via drawImage
+      // Composite WebGPU canvas + all Canvas2D overlays into one image
       return new Promise<string>((resolve) => {
         requestAnimationFrame(() => {
           const offscreen = document.createElement('canvas');
@@ -162,7 +161,18 @@ export async function createScene(
           offscreen.width = canvas.width * scale;
           offscreen.height = canvas.height * scale;
           const ctx2d = offscreen.getContext('2d')!;
+
+          // 1. Draw WebGPU canvas (base layer)
           ctx2d.drawImage(canvas, 0, 0, offscreen.width, offscreen.height);
+
+          // 2. Draw all overlay canvases in DOM order (legend, annotations, axis labels, etc.)
+          const overlays = wrapper.querySelectorAll('canvas');
+          for (const overlay of overlays) {
+            if (overlay === canvas) continue; // skip the WebGPU canvas itself
+            if (overlay.width === 0 || overlay.height === 0) continue;
+            ctx2d.drawImage(overlay, 0, 0, offscreen.width, offscreen.height);
+          }
+
           resolve(offscreen.toDataURL('image/png'));
         });
       });

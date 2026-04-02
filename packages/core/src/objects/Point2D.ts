@@ -11,6 +11,8 @@ export interface PointOptions {
   label?: string;
   opacity?: number;
   filled?: boolean; // default true. false = open dot (ring)
+  /** Background color for open dot interior. Default: '#1c1c1c' (3b1b theme) */
+  bgColor?: string;
 }
 
 export class Point2D extends MathObject {
@@ -33,6 +35,7 @@ export class Point2D extends MathObject {
       label: options?.label ?? '',
       opacity: options?.opacity ?? 1,
       filled: options?.filled ?? true,
+      bgColor: options?.bgColor ?? '#1c1c1c',
     };
   }
 
@@ -88,9 +91,13 @@ export class Point2D extends MathObject {
   private writePointUniforms(): void {
     if (!this.gpu || !this.pointBuffer) return;
     const [r, g, b] = hexToRGBA(this.options.color);
+    const [bgr, bgg, bgb] = hexToRGBA(this.options.bgColor);
     const data = new Float32Array([
-      r, g, b, this.options.opacity,
-      this.pos[0], this.pos[1], this.options.size, this.options.filled ? 1.0 : 0.0,
+      r, g, b, this.options.opacity,        // color
+      bgr, bgg, bgb, 1.0,                    // bgColor
+      this.pos[0], this.pos[1],              // center
+      this.options.size,                      // size
+      this.options.filled ? 1.0 : 0.0,       // filled
     ]);
     writeBuffer(this.gpu.device.queue, this.pointBuffer, 0, data);
   }

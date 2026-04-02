@@ -26,6 +26,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         docs: resolve(__dirname, 'docs.html'),
+        suneung7: resolve(__dirname, 'suneung7.html'),
       },
     },
   },

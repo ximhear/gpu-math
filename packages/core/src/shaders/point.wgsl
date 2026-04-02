@@ -8,6 +8,7 @@ struct CameraUniforms {
 
 struct PointUniforms {
   color: vec4<f32>,
+  bgColor: vec4<f32>,   // background color (for open dot fill)
   center: vec2<f32>,
   size: f32,     // radius in pixels
   filled: f32,   // 1.0 = filled, 0.0 = ring (open dot)
@@ -46,11 +47,19 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
   if (dist > 1.0) { discard; }
   let outerAlpha = 1.0 - smoothstep(0.8, 1.0, dist);
 
-  // Open dot (ring): discard the interior
+  // Open dot (ring): fill interior with background color, draw ring on edge
   if (pt.filled < 0.5) {
-    let innerAlpha = smoothstep(0.55, 0.7, dist);
-    if (innerAlpha < 0.01) { discard; }
-    return vec4(pt.color.rgb, pt.color.a * outerAlpha * innerAlpha);
+    let ringStart = 0.55;
+    let ringEnd = 0.7;
+    let ringAlpha = smoothstep(ringStart, ringEnd, dist);
+
+    // Interior: opaque background (covers lines underneath)
+    if (dist < ringStart) {
+      return vec4(pt.bgColor.rgb, 1.0);
+    }
+    // Transition zone: blend background → ring color
+    let blended = mix(pt.bgColor.rgb, pt.color.rgb, ringAlpha);
+    return vec4(blended, outerAlpha);
   }
 
   return vec4(pt.color.rgb, pt.color.a * outerAlpha);

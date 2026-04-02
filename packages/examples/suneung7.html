@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>수능 7번 — y=x², y=x-2, x=2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f5f5f5;
+      color: #333;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+      gap: 16px;
+    }
+    h1 { font-size: 1.3rem; font-weight: 500; }
+    p { color: #666; font-size: 0.9rem; }
+    .scene { position: relative; }
+    canvas { border: 1px solid #ddd; border-radius: 8px; }
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .buttons button {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .buttons button:hover { background: #555; }
+  </style>
+</head>
+<body>
+  <h1>수능 7번 — 넓이 구하기</h1>
+  <p>곡선 y=x²과 y축 및 두 직선 y=x−2, x=2로 둘러싸인 부분의 넓이</p>
+  <div class="scene"><canvas id="canvas"></canvas></div>
+  <div class="buttons">
+    <button id="btn1x">Download PNG (1x)</button>
+    <button id="btn2x">Download PNG (2x HD)</button>
+  </div>
+  <p>답: ④ 14/3</p>
+  <script type="module" src="/src/suneung7.ts"></script>
+</body>
+</html>
